@@ -1,7 +1,8 @@
 import requests
 import json
 import parameters
-import time
+import random
+from time import sleep
 
 def analyze_profile(profile_name, profile_headline=""):
     """
@@ -15,11 +16,11 @@ def analyze_profile(profile_name, profile_headline=""):
         A personalized connection message based on the profile
     """
     if not parameters.enable_gemini_analysis:
-        return "Hello, I'd like to connect with you on LinkedIn."
+        return get_default_message(profile_name)
     
-    if not parameters.gemini_api_key:
-        print("WARNING: Gemini API key not provided. Using default message.")
-        return "Hello, I'd like to connect with you on LinkedIn."
+    if not parameters.gemini_api_key or parameters.gemini_api_key == "YOUR_GEMINI_API_KEY":
+        print("WARNING: Valid Gemini API key not provided. Using default message.")
+        return get_default_message(profile_name)
     
     try:
         # Prepare the API request
@@ -39,6 +40,7 @@ def analyze_profile(profile_name, profile_headline=""):
         - Mention a specific aspect of their background that is interesting
         - Be no more than 3 sentences
         - Not use generic phrases like "I'd like to add you to my network"
+        - Not exceed 300 characters total (LinkedIn's limit)
         """
         
         payload = {
@@ -56,15 +58,44 @@ def analyze_profile(profile_name, profile_headline=""):
             data=json.dumps(payload)
         )
         
+        # Handle different response status codes
         if response.status_code == 200:
             response_data = response.json()
             if "candidates" in response_data and len(response_data["candidates"]) > 0:
                 message = response_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                # Ensure message is within LinkedIn's character limit
+                if len(message) > 300:
+                    message = message[:297] + "..."
                 return message
+            else:
+                print(f"WARNING: Unexpected Gemini API response format. Using default message.")
+        elif response.status_code == 429:
+            print(f"WARNING: Gemini API rate limit exceeded. Using default message.")
+        elif response.status_code == 403:
+            print(f"WARNING: Gemini API authentication error (invalid API key). Using default message.")
+        else:
+            print(f"WARNING: Gemini API error (status code: {response.status_code}). Using default message.")
         
-        print(f"WARNING: Gemini API error ({response.status_code}). Using default message.")
-        return "Hello, I'd like to connect with you on LinkedIn."
+        return get_default_message(profile_name)
     
+    except requests.exceptions.ConnectionError:
+        print(f"ERROR: Connection error when calling Gemini API. Check your internet connection.")
+        return get_default_message(profile_name)
+    except requests.exceptions.Timeout:
+        print(f"ERROR: Timeout when calling Gemini API.")
+        return get_default_message(profile_name)
+    except json.JSONDecodeError:
+        print(f"ERROR: Invalid JSON response from Gemini API.")
+        return get_default_message(profile_name)
     except Exception as e:
         print(f"ERROR: Gemini API request failed: {str(e)}")
-        return "Hello, I'd like to connect with you on LinkedIn."
+        return get_default_message(profile_name)
+
+def get_default_message(name=None):
+    """Generate a generic but slightly varied default message"""
+    default_messages = [
+        f"Hello{' ' + name if name else ''}, I'm interested in connecting and expanding my professional network in this industry.",
+        f"Hi{' ' + name if name else ''}, I'd love to connect and learn more about your professional experiences.",
+        f"Hello{' ' + name if name else ''}, I'm building my professional network and would appreciate connecting with you."
+    ]
+    return random.choice(default_messages)
