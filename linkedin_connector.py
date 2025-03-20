@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import csv
 import parameters
-from gemini_integration import analyze_profile
+from ai_integration import analyze_profile
 import random
 
 def connect_to_profiles(search_keywords, max_pages, connection_writer, excluded_profiles=[]):

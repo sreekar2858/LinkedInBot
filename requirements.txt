@@ -3,3 +3,4 @@ webdriver-manager
 requests
 python-dotenv
 google-genai
+openai
