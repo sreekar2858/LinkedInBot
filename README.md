@@ -5,7 +5,8 @@ Python code to automatically expand your LinkedIn network based on your interest
 
 ## Features
 
-- Search LinkedIn for people based on keywords
+- Search LinkedIn for people based on keywords and location
+- Filter connections by country
 - Send personalized connection requests
 - Generate AI-powered connection messages using either Google's Gemini AI or GPT-4o
 - Log successful connections
@@ -50,6 +51,7 @@ Python code to automatically expand your LinkedIn network based on your interest
 3. Configure settings in `parameters.py`:
    ```python
    search_keywords = 'Your, Keywords, Here'  # Comma-separated
+   search_country = 'Your Country Here'  # Optional, leave empty for worldwide
    max_pages_to_search = 1  # Number of search pages to process
    max_connections_per_session = 10  # Safety limit
    ai_provider = "gemini"  # Or "gpt4o" to use GPT-4o
@@ -79,6 +81,8 @@ The script will:
 
 In `parameters.py`, you can customize:
 - `search_keywords`: Comma-separated keywords for finding connections
+- `search_country`: Country name (for reference only)
+- `search_geo_urn`: LinkedIn's geoUrn ID for location filtering (e.g., "103644278" for United States)
 - `max_pages_to_search`: Number of search result pages to process
 - `exclude_connections`: Names of profiles to skip
 - `max_connections_per_day`: Daily connection request limit (default: 20)

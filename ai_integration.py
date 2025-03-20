@@ -1,9 +1,51 @@
 import os
 import random
+import re
 from google import genai
 from google.genai import types
 from openai import OpenAI
 import parameters
+
+def process_message(message):
+    """
+    Process and sanitize the AI-generated message before sending
+    
+    Args:
+        message: Raw message from AI model
+        
+    Returns:
+        Processed and sanitized message string
+    """
+    if not message:
+        return ""
+        
+    # Remove any markdown or special formatting
+    message = re.sub(r'[*_~`]', '', message)
+    
+    # Remove multiple spaces and newlines
+    message = re.sub(r'\s+', ' ', message)
+    
+    # Remove quotes if the message is wrapped in them
+    message = message.strip('"\'')
+    
+    # Fix common formatting issues
+    message = re.sub(r'\s+([.,!?])', r'\1', message)  # Remove spaces before punctuation
+    message = re.sub(r'\.{2,}', '...', message)  # Standardize ellipsis
+    
+    # Ensure proper spacing and capitalization after punctuation
+    def capitalize_after_period(match):
+        return match.group(1) + ' ' + match.group(2).upper()
+    
+    message = re.sub(r'([.!?])([a-zA-Z])', capitalize_after_period, message)
+    
+    # Ensure first letter is capitalized
+    message = message[0].upper() + message[1:] if message else ""
+    
+    # Handle LinkedIn's character limit
+    if len(message) > 300:
+        message = message[:297] + "..."
+        
+    return message.strip()
 
 def analyze_profile(profile_name, profile_headline=""):
     """
@@ -13,12 +55,15 @@ def analyze_profile(profile_name, profile_headline=""):
         return get_default_message(profile_name)
 
     if parameters.ai_provider == "gemini":
-        return analyze_profile_gemini(profile_name, profile_headline)
+        message = analyze_profile_gemini(profile_name, profile_headline)
     elif parameters.ai_provider == "gpt4o":
-        return analyze_profile_gpt4o(profile_name, profile_headline)
+        message = analyze_profile_gpt4o(profile_name, profile_headline)
     else:
         print(f"WARNING: Unknown AI provider {parameters.ai_provider}. Using default message.")
-        return get_default_message(profile_name)
+        message = get_default_message(profile_name)
+    
+    # Process the message before returning
+    return process_message(message)
 
 def analyze_profile_gemini(profile_name, profile_headline):
     """Use Gemini AI to generate a personalized connection message"""
@@ -38,7 +83,6 @@ def analyze_profile_gemini(profile_name, profile_headline):
         - Be personalized based on their profile
         - Be professional and friendly
         - Mention a specific aspect of their background that is interesting
-        - Be no more than 3 sentences
         - Not use generic phrases like "I'd like to add you to my network"
         - Not exceed 300 characters total (LinkedIn's limit)"""
 
@@ -93,20 +137,16 @@ def analyze_profile_gpt4o(profile_name, profile_headline):
             api_key=parameters.gpt4o_api_key,
         )
 
-        system_prompt = """You are an AI assistant that helps write professional and personalized LinkedIn connection request messages.
-        Your messages should be:
-        - Professional and friendly
-        - Personalized to the recipient's background
-        - No more than 3 sentences
-        - Under 300 characters
-        - Never use generic phrases like "I'd like to add you to my network"
-        """
+        system_prompt = """Generate a brief, personalized LinkedIn connection request message.
+        Requirements:
+        - Must be under 300 characters
+        - Mention a specific skill or industry from their profile
+        - Always include their name at the start
+        - Keep it professional and concise"""
 
-        user_prompt = f"""Write a LinkedIn connection request message for a person with:
+        user_prompt = f"""Create a connection request for:
         Name: {profile_name}
-        Headline: {profile_headline}
-        
-        Make sure the message is under 300 characters and mentions a specific aspect of their background."""
+        Headline: {profile_headline}"""
 
         response = client.chat.completions.create(
             messages=[
@@ -121,7 +161,7 @@ def analyze_profile_gpt4o(profile_name, profile_headline):
             ],
             temperature=0.7,
             top_p=0.95,
-            max_tokens=300,
+            max_tokens=100,
             model=parameters.gpt4o_model
         )
 

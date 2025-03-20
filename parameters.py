@@ -17,14 +17,16 @@ if not linkedin_username or not linkedin_password:
 # LinkedIn Connection settings
 # ====================================================
 # Search parameters
-search_keywords = 'CFD, OpenFOAM, HPC'
+search_keywords = 'Javascript, React, UI/ UX'  # Keywords to search for in LinkedIn profiles
+search_country = 'United States'  # Country name (for readability)
+search_geo_urn = '103644278'  # LinkedIn's geoUrn ID for location filtering
 exclude_connections = ''
 max_pages_to_search = 1
 # Connection limits
 max_connections_per_day = 20  # LinkedIn typically allows ~100 per week
 max_connections_per_session = 10  # Stop after this many in a single run
 # AI Configuration
-ai_provider = "gemini"  # Options: "gemini" or "gpt4o"
+ai_provider = "gpt4o"  # Options: "gemini" or "gpt4o"
 gemini_api_key = os.getenv('GEMINI_API_KEY')
 gpt4o_api_key = os.getenv('gpt_4o')
 gpt4o_endpoint = "https://models.inference.ai.azure.com"

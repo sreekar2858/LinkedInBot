@@ -1,6 +1,6 @@
-selenium
-webdriver-manager
+selenium>=4.0.0
+webdriver-manager>=4.0.1
 requests
-python-dotenv
+python-dotenv>=0.19.0
 google-genai
 openai

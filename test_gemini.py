@@ -209,9 +209,47 @@ def test_ai_integration():
     
     return True
 
+def test_message_processing():
+    """Test the message processing functionality"""
+    from ai_integration import process_message
+    
+    test_cases = [
+        {
+            "input": "**Hello John**, impressed by your _ML expertise_!",
+            "expected": "Hello John, impressed by your ML expertise!"
+        },
+        {
+            "input": "Hi  Sarah,   great work  in AI...Would love   to connect",
+            "expected": "Hi Sarah, great work in AI... Would love to connect"
+        },
+        {
+            "input": '"Andrea, noticed your expertise in CFD simulations!"',
+            "expected": "Andrea, noticed your expertise in CFD simulations!"
+        },
+        {
+            "input": "hello.would like to connect",
+            "expected": "Hello. Would like to connect"
+        }
+    ]
+    
+    print("\nTEST 5: Testing message processing...")
+    for i, case in enumerate(test_cases, 1):
+        result = process_message(case["input"])
+        if result == case["expected"]:
+            print(f"✅ PASS: Test case {i} processed correctly")
+            print(f"   Input:    \"{case['input']}\"")
+            print(f"   Output:   \"{result}\"")
+        else:
+            print(f"❌ FAIL: Test case {i} failed")
+            print(f"   Input:    \"{case['input']}\"")
+            print(f"   Output:   \"{result}\"")
+            print(f"   Expected: \"{case['expected']}\"")
+        print()
+
 if __name__ == "__main__":
     # Load environment variables from .env file
     load_dotenv()
     
-    # Run the test
+    # Run all tests
     test_ai_integration()
+    test_message_processing()

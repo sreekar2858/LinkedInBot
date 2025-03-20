@@ -1,3 +1,4 @@
+import urllib.parse
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -10,6 +11,21 @@ import csv
 import parameters
 from ai_integration import analyze_profile
 import random
+
+# LinkedIn country codes mapping
+LINKEDIN_COUNTRY_CODES = {
+    "United States": ["us", "103644278"],
+    "United Kingdom": ["uk", "101165590"],
+    "Canada": ["ca", "101174742"],
+    "Australia": ["au", "101452733"],
+    "India": ["in", "102713980"],
+    "Germany": ["de", "101282230"],
+    "France": ["fr", "105015875"],
+    "Italy": ["it", "103350119"],
+    "Spain": ["es", "105646813"],
+    "Netherlands": ["nl", "102890719"],
+    # Add more countries as needed
+}
 
 def connect_to_profiles(search_keywords, max_pages, connection_writer, excluded_profiles=[]):
     """
@@ -36,11 +52,25 @@ def connect_to_profiles(search_keywords, max_pages, connection_writer, excluded_
         # Connection counter for this session
         connections_made = 0
         
+        # Construct search URL with geoUrn filter if specified
+        base_url = 'https://www.linkedin.com/search/results/people/?keywords={keywords}'
+        if parameters.search_geo_urn:
+            # Add geoUrn parameter using the provided ID
+            # geo_param = f'&geoUrn=["urn:li:geo:{parameters.search_geo_urn}"]'
+            geo_param = f'&geoUrn={parameters.search_geo_urn}'
+            base_url += geo_param
+            print(f"INFO: Filtering results using geoUrn ID: {parameters.search_geo_urn}")
+            if parameters.search_country:
+                print(f"INFO: Country name set to: {parameters.search_country} (for reference only)")
+        
         for page_num in range(1, max_pages + 1):
             print(f'\nINFO: Processing search results page {page_num}')
             
-            # Navigate to search results page
-            search_url = f'https://www.linkedin.com/search/results/people/?keywords={search_keywords}&origin=GLOBAL_SEARCH_HEADER&page={page_num}'
+            # Navigate to search results page with geoUrn filter
+            search_url = base_url.format(keywords=urllib.parse.quote(search_keywords))
+            if page_num > 1:
+                search_url += f'&page={page_num}'
+            
             driver.get(search_url)
             
             # Wait for page to load
@@ -209,8 +239,19 @@ def initialize_browser():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
-        # Initialize the driver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        try:
+            # Initialize the driver with specific version matching
+            driver = webdriver.Chrome(
+                service=Service(ChromeDriverManager(version="stable").install()),
+                options=chrome_options
+            )
+        except Exception as chrome_error:
+            print(f"First attempt failed, trying alternative initialization: {chrome_error}")
+            # Fallback to latest version if specific version fails
+            driver = webdriver.Chrome(
+                service=Service(ChromeDriverManager().install()),
+                options=chrome_options
+            )
         
         # Execute CDP commands to disable navigator.webdriver flag
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -219,6 +260,10 @@ def initialize_browser():
         return driver
     except Exception as e:
         print(f"ERROR: Failed to initialize browser - {e}")
+        print("\nTroubleshooting tips:")
+        print("1. Make sure Chrome is installed and up to date")
+        print("2. Try closing all Chrome windows and trying again")
+        print("3. Check if any antivirus is blocking ChromeDriver")
         return None
 
 def login_to_linkedin(driver):
