@@ -15,7 +15,7 @@ if not linkedin_username or not linkedin_password:
     print("Please set LINKEDIN_USERNAME and LINKEDIN_PASSWORD in your .env file")
 
 # Search parameters
-search_keywords = 'DevOps,Linux,Python,AWS'
+search_keywords = 'CFD, OpenFOAM, HPC'
 exclude_connections = ''
 max_pages_to_search = 1
 
