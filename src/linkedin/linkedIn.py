@@ -1,8 +1,17 @@
-import parameters
 import csv
 import os.path
 import time
-from linkedin_connector import connect_to_profiles
+import sys
+from pathlib import Path
+
+# Add project root to Python path when running as main script
+if __name__ == "__main__":
+    project_root = str(Path(__file__).parent.parent.parent)
+    if project_root not in sys.path:
+        sys.path.append(project_root)
+
+from config import parameters
+from src.linkedin.linkedin_connector import connect_to_profiles
 
 def main():
     try:

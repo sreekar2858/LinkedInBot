@@ -17,7 +17,7 @@ if not linkedin_username or not linkedin_password:
 # LinkedIn Connection settings
 # ====================================================
 # Search parameters
-search_keywords = 'Javascript, React, UI/ UX'  # Keywords to search for in LinkedIn profiles
+search_keywords = 'Web development'  # Keywords to search for in LinkedIn profiles
 search_country = 'United States'  # Country name (for readability)
 search_geo_urn = '103644278'  # LinkedIn's geoUrn ID for location filtering
 exclude_connections = ''

@@ -48,26 +48,42 @@ Python code to automatically expand your LinkedIn network based on your interest
    - For Gemini: Visit https://makersuite.google.com/app/apikey
    - For GPT-4o: Use your existing GPT-4o API key
 
-3. Configure settings in `parameters.py`:
+3. Configure settings in `config/parameters.py`:
    ```python
+   # Search parameters
    search_keywords = 'Your, Keywords, Here'  # Comma-separated
-   search_country = 'Your Country Here'  # Optional, leave empty for worldwide
+   search_country = 'Your Country Here'  # For reference only
+   search_geo_urn = '103644278'  # LinkedIn's geoUrn ID for location filtering
+   exclude_connections = ''  # Comma-separated list of names to skip
    max_pages_to_search = 1  # Number of search pages to process
-   max_connections_per_session = 10  # Safety limit
-   ai_provider = "gemini"  # Or "gpt4o" to use GPT-4o
+
+   # Connection limits
+   max_connections_per_day = 20  # LinkedIn typically allows ~100 per week
+   max_connections_per_session = 10  # Stop after this many in a single run
+   connection_delay_seconds = 5  # Time between requests
+
+   # AI Configuration
+   ai_provider = "gemini"  # Options: "gemini" or "gpt4o"
+   enable_ai_analysis = True  # Toggle AI message generation
+   gpt4o_endpoint = "https://models.inference.ai.azure.com"  # If using GPT-4o
+   gpt4o_model = "gpt-4o"  # Model name for GPT-4o
    ```
 
 ## Usage
 
 1. Test the AI integration (recommended before first use):
    ```bash
-   python test_gemini.py
+   python tests/test_gemini.py
    ```
-   This will test both AI providers if you have both API keys configured.
+   This will test both AI providers if you have configured them, validating:
+   - API key configuration
+   - Direct API connections
+   - Message generation
+   - Message processing and formatting
 
 2. Run the main script:
    ```bash
-   python linkedIn.py
+   python src/linkedin/linkedIn.py
    ```
 
 The script will:
@@ -79,17 +95,34 @@ The script will:
 
 ## Configuration Options
 
-In `parameters.py`, you can customize:
+In `config/parameters.py`, you can customize:
 - `search_keywords`: Comma-separated keywords for finding connections
 - `search_country`: Country name (for reference only)
 - `search_geo_urn`: LinkedIn's geoUrn ID for location filtering (e.g., "103644278" for United States)
+- `exclude_connections`: Comma-separated list of profile names to skip
 - `max_pages_to_search`: Number of search result pages to process
-- `exclude_connections`: Names of profiles to skip
 - `max_connections_per_day`: Daily connection request limit (default: 20)
 - `max_connections_per_session`: Connection limit per script run (default: 10)
 - `connection_delay_seconds`: Delay between requests (default: 5)
 - `ai_provider`: Choose between "gemini" or "gpt4o"
 - `enable_ai_analysis`: Toggle AI message generation (default: True)
+- `gpt4o_endpoint`: API endpoint for GPT-4o (if using)
+- `gpt4o_model`: Model name for GPT-4o requests
+- `connections_file`: CSV file to log successful connections (default: 'connections.csv')
+
+## Supported Countries
+
+The script includes built-in geoUrn IDs for the following countries:
+- United States (103644278)
+- United Kingdom (101165590)
+- Canada (101174742)
+- Australia (101452733)
+- India (102713980)
+- Germany (101282230)
+- France (105015875)
+- Italy (103350119)
+- Spain (105646813)
+- Netherlands (102890719)
 
 ## Safety Features
 
@@ -111,14 +144,17 @@ In `parameters.py`, you can customize:
 
 1. If AI messages fail:
    - Verify your API key in `.env`
-   - Run `test_gemini.py` to diagnose issues
+   - Run `tests/test_gemini.py` to diagnose issues
    - Check API quota and billing status
+   - Verify the GPT-4o endpoint URL if using GPT-4o
 
 2. If LinkedIn automation fails:
    - Check your credentials in `.env`
    - Verify internet connection
    - Ensure Chrome browser is installed
    - Try reducing connection frequency
+   - Check if LinkedIn has updated their HTML structure
+   - Clear browser cookies/cache if login issues persist
 
 ## Contributing
 

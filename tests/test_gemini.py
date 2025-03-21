@@ -4,20 +4,19 @@ Test script to verify if the AI integrations are working properly.
 This script tests both Gemini and GPT-4o API connections and message generation.
 """
 
-import sys
 import os
 import time
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from openai import OpenAI
+import sys
+from pathlib import Path
 
-# Add the current directory to path to ensure imports work correctly
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Import the functions we want to test
-from ai_integration import analyze_profile, get_default_message
-import parameters
+# Add the parent directory to Python path
+sys.path.append(str(Path(__file__).parent.parent))
+from src.ai.ai_integration import analyze_profile, get_default_message
+from config import parameters
 
 def test_gpt4o_api():
     """Test direct connection to GPT-4o API"""
@@ -104,9 +103,9 @@ def test_ai_integration():
         print("   Please set either GEMINI_API_KEY or gpt_4o in your .env file\n")
         return False
     else:
-        if gemini_configured:
+        if (gemini_configured):
             print("✅ PASS: Gemini API key is configured")
-        if gpt4o_configured:
+        if (gpt4o_configured):
             print("✅ PASS: GPT-4o API key is configured")
         print()
     
@@ -201,17 +200,12 @@ def test_ai_integration():
                 print(f"❌ ERROR: Exception occurred during API test: {str(e)}")
             
             # Restore original setting
-            parameters.enable_ai_analysis = original_setting
-    
-    print("\n" + "="*80)
-    print("TEST COMPLETED".center(80))
-    print("="*80 + "\n")
-    
+            parameters.enable_ai_analysis = original_setting   
     return True
 
 def test_message_processing():
     """Test the message processing functionality"""
-    from ai_integration import process_message
+    from src.ai.ai_integration import process_message
     
     test_cases = [
         {
@@ -253,3 +247,6 @@ if __name__ == "__main__":
     # Run all tests
     test_ai_integration()
     test_message_processing()
+    print("\n" + "="*80)
+    print("TEST COMPLETED".center(80))
+    print("="*80 + "\n")

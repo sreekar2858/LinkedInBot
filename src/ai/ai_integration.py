@@ -4,7 +4,7 @@ import re
 from google import genai
 from google.genai import types
 from openai import OpenAI
-import parameters
+from config import parameters
 
 def process_message(message):
     """
@@ -76,15 +76,23 @@ def analyze_profile_gemini(profile_name, profile_headline):
             api_key=parameters.gemini_api_key,
         )
 
-        prompt = f"""Write a short, professional LinkedIn connection request message to a person named {profile_name}. 
-        Their headline is: {profile_headline}
-        
-        The message should:
-        - Be personalized based on their profile
-        - Be professional and friendly
-        - Mention a specific aspect of their background that is interesting
-        - Not use generic phrases like "I'd like to add you to my network"
-        - Not exceed 300 characters total (LinkedIn's limit)"""
+        prompt = f"""As a professional networker, write a highly personalized LinkedIn connection request to {profile_name}.
+Profile Headline: {profile_headline}
+
+Requirements for the message:
+1. Start with their name
+2. Reference SPECIFIC aspects from their headline like:
+   - Their current role or position
+   - Industry expertise
+   - Mentioned skills or technologies
+   - Company or organization (if mentioned)
+3. Express genuine interest in their specific professional focus
+4. Include a relevant point of connection or shared professional interest
+5. Keep it concise and natural - under 300 characters
+6. Avoid generic networking phrases like "add to network" or "grow connections"
+7. End with a subtle hook that encourages response
+
+The message should read as if you've carefully reviewed their profile and found something genuinely interesting."""
 
         contents = [
             types.Content(
@@ -137,16 +145,24 @@ def analyze_profile_gpt4o(profile_name, profile_headline):
             api_key=parameters.gpt4o_api_key,
         )
 
-        system_prompt = """Generate a brief, personalized LinkedIn connection request message.
-        Requirements:
-        - Must be under 300 characters
-        - Mention a specific skill or industry from their profile
-        - Always include their name at the start
-        - Keep it professional and concise"""
+        system_prompt = """You are a professional networking assistant specialized in crafting highly personalized LinkedIn connection requests. 
+Your messages should demonstrate careful attention to the individual's profile and create genuine points of connection.
 
-        user_prompt = f"""Create a connection request for:
-        Name: {profile_name}
-        Headline: {profile_headline}"""
+Key requirements:
+1. Messages must be under 300 characters
+2. Always begin with the person's name
+3. Reference specific details from their headline/role
+4. Demonstrate genuine interest in their expertise
+5. Include a subtle conversation hook
+6. Maintain professional but warm tone
+7. Avoid generic networking phrases
+8. Focus on shared professional interests or industry alignment"""
+
+        user_prompt = f"""Create a personalized LinkedIn connection request for:
+Name: {profile_name}
+Current Role/Headline: {profile_headline}
+
+Focus on specific aspects of their professional background that make this connection valuable and interesting."""
 
         response = client.chat.completions.create(
             messages=[
