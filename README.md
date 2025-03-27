@@ -93,6 +93,20 @@ The script will:
 - Send connection requests while respecting rate limits
 - Log successful connections in CSV format
 
+## Command-Line Arguments
+
+The script supports the following command-line arguments when running directly from the connector:
+
+```bash
+python src/linkedin/linkedin_connector.py --max-connections 15 --test-mode
+```
+
+Available arguments:
+- `--max-connections` - Set the maximum number of connection requests to send in this session (overrides the default in parameters.py)
+- `--test-mode` - Run in test mode with additional logging output
+
+When running the main script (`linkedIn.py`), these arguments are passed through configuration in `parameters.py` rather than command-line arguments.
+
 ## Configuration Options
 
 In `config/parameters.py`, you can customize:
